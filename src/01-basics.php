@@ -12,7 +12,30 @@
  */
 function getMinuteQuarter(int $minute)
 {
+    $result = '';
+    if ($minute > 60 || $minute < 0) {
+        throw new InvalidArgumentException('The number have not to be greater then 60 and not to be a negative');
+    }
+
+    switch ($minute) {
+        case 0:
+        case $minute > 45 && $minute < 60:
+            $result = 'fourth';
+            break;
+        case $minute > 0 && $minute <= 15:
+            $result = 'first';
+            break;
+        case $minute > 15 && $minute <= 30:
+            $result = 'second';
+            break;
+        case $minute > 30 && $minute <= 45:
+            $result = 'third';
+            break;
+    }
+
+    return $result;
 }
+
 
 /**
  * The $year variable contains a year (i.e. 1995 or 2020 etc).
@@ -27,6 +50,20 @@ function getMinuteQuarter(int $minute)
  */
 function isLeapYear(int $year)
 {
+    if ($year < 1900) {
+        throw new InvalidArgumentException();
+    }
+
+
+    if ($year % 4 == 0) {
+        return true;
+    }
+
+    if ($year % 100 == 0 && $year % 400 == 0) {
+        return true;
+    }
+
+    return false;
 }
 
 /**
@@ -42,4 +79,11 @@ function isLeapYear(int $year)
  */
 function isSumEqual(string $input)
 {
+    if (strlen($input) != 6) {
+        throw new InvalidArgumentException();
+    }
+    $sum1 = $input[0] + $input[1] + $input[2];
+    $sum2 = $input[3] + $input[4] + $input[5];
+
+    return $sum1 == $sum2;
 }
