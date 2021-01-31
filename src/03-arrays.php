@@ -67,32 +67,19 @@ function getUniqueValue(array $input)
  */
 function groupByTag(array $input)
 {
-    $tags_arr = [];
     $result_arr = [];
 
-    for ($i = 0; $i < count($input); $i++) {
-        $tags = $input[$i]['tags'];
-        foreach ($tags as $tag) {
-            if (!in_array($tag, $tags_arr)) {
-                array_push($tags_arr, $tag);
-            }
-        }
-    }
+    foreach ($input as $item) {
+        foreach ($item['tags'] as $elem) {
+            $value = $item['name'];
+            $result_arr[$elem][] = $value;
 
-    foreach ($tags_arr as $tag) {
-        foreach ($input as $item) {
-            if (in_array($tag, $item['tags'])) {
-                $result_arr[$tag][] = $item['name'];
-            }
+            sort($result_arr[$elem]);
+
         }
     }
 
     ksort($result_arr);
-
-    foreach ($result_arr as $k => $v) {
-        sort($v);
-        $result_arr[$k] = $v;
-    }
 
     return $result_arr;
 }
