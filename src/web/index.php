@@ -10,6 +10,18 @@ $airports = require './airports.php';
  * (see Filtering tasks 1 and 2 below)
  */
 
+if (isset($_GET['filter_by_first_letter'])) {
+    $airports = array_filter($airports, function ($item) {
+        return $item['name'][0] == $_GET['filter_by_first_letter'][0];
+    });
+}
+
+if (isset($_GET['filter_by_state'])) {
+    $airports = array_filter($airports, function ($item) {
+        return $item['state'][0] == $_GET['filter_by_state'][0];
+    });
+}
+
 // Sorting
 /**
  * Here you need to check $_GET request if it has sorting key
@@ -17,12 +29,31 @@ $airports = require './airports.php';
  * (see Sorting task below)
  */
 
+if (isset($_GET['sort'])) {
+    $value = $_GET['sort'];
+    usort($airports, function ($item1, $item2) {
+        global $value;
+        return $item1[$value] <=> $item2[$value];
+    });
+}
+
+
 // Pagination
 /**
  * Here you need to check $_GET request if it has pagination key
  * and apply pagination logic
  * (see Pagination task below)
  */
+
+$page = $_GET['page'] ?? 1;
+$results_per_page = 5;
+$curr_page_result = ($page - 1) * $results_per_page;
+$number_of_page = ceil(count($airports) / $results_per_page);
+$start_of_output = ($page - 1) * $results_per_page;
+$airports = array_slice($airports, $start_of_output, $results_per_page);
+
+$_GET['page'] = (int)$page;
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -32,7 +63,7 @@ $airports = require './airports.php';
     <meta name="description" content="">
     <title>Airports</title>
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
 </head>
 <body>
 <main role="main" class="container">
@@ -53,10 +84,10 @@ $airports = require './airports.php';
         Filter by first letter:
 
         <?php foreach (getUniqueFirstLetters(require './airports.php') as $letter): ?>
-            <a href="#"><?= $letter ?></a>
+            <a href="?<?= makeUrl('filter_by_first_letter', $letter, true) ?>"><?= $letter ?></a>
         <?php endforeach; ?>
 
-        <a href="/" class="float-right">Reset all filters</a>
+        <a href="<?= $_SERVER['PHP_SELF'] ?>" class="float-right">Reset all filters</a>
     </div>
 
     <!--
@@ -72,10 +103,10 @@ $airports = require './airports.php';
     <table class="table">
         <thead>
         <tr>
-            <th scope="col"><a href="#">Name</a></th>
-            <th scope="col"><a href="#">Code</a></th>
-            <th scope="col"><a href="#">State</a></th>
-            <th scope="col"><a href="#">City</a></th>
+            <th scope="col"><a href="?<?= makeUrl('sort', 'name') ?>">Name</a></th>
+            <th scope="col"><a href="?<?= makeUrl('sort', 'code') ?>">Code</a></th>
+            <th scope="col"><a href="?<?= makeUrl('sort', 'state') ?>">State</a></th>
+            <th scope="col"><a href="?<?= makeUrl('sort', 'city') ?>">City</a></th>
             <th scope="col">Address</th>
             <th scope="col">Timezone</th>
         </tr>
@@ -92,14 +123,16 @@ $airports = require './airports.php';
                i.e. if you have filter_by_first_letter set you can additionally use filter_by_state
         -->
         <?php foreach ($airports as $airport): ?>
-        <tr>
-            <td><?= $airport['name'] ?></td>
-            <td><?= $airport['code'] ?></td>
-            <td><a href="#"><?= $airport['state'] ?></a></td>
-            <td><?= $airport['city'] ?></td>
-            <td><?= $airport['address'] ?></td>
-            <td><?= $airport['timezone'] ?></td>
-        </tr>
+            <tr>
+                <td><?= $airport['name'] ?></td>
+                <td><?= $airport['code'] ?></td>
+                <td>
+                    <a href="?<?= makeUrl('filter_by_state', $airport['state'][0], true) ?>"><?= $airport['state'] ?></a>
+                </td>
+                <td><?= $airport['city'] ?></td>
+                <td><?= $airport['address'] ?></td>
+                <td><?= $airport['timezone'] ?></td>
+            </tr>
         <?php endforeach; ?>
         </tbody>
     </table>
@@ -115,9 +148,34 @@ $airports = require './airports.php';
     -->
     <nav aria-label="Navigation">
         <ul class="pagination justify-content-center">
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item <?php echo ($page == 1) ? 'disabled' : '' ?>">
+                <a class="page-link" href="?<?= makeUrl('page', $page - 1) ?>" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            <?php for ($i = $page - 1; $i < $page + 2; $i++): ?>
+                <?php if ($i >= 1 && $i <= $number_of_page): ?>
+                    <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
+                        <a href="?<?= makeUrl('page', $i) ?>" class="page-link"><?= $i ?></a>
+                    </li>
+                <?php endif; ?>
+            <?php endfor; ?>
+
+            <?php if ($page < $number_of_page - 1): ?>
+                <li class="page-item">
+                    <a href="#" class="page-link">...</a>
+                </li>
+                <li class="page-item">
+                    <a href="?<?= makeUrl('page', $number_of_page) ?>" class="page-link"><?= $number_of_page ?></a>
+                </li>
+            <?php endif; ?>
+
+            <li class="page-item <?php echo ($page == $number_of_page) ? 'disabled' : '' ?>">
+                <a class="page-link" href="?<?= makeUrl('page', $page + 1) ?>" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
         </ul>
     </nav>
 

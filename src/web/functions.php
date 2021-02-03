@@ -6,12 +6,32 @@
  *
  * Create a PhpUnit test (GetUniqueFirstLettersTest) which will check this behavior
  *
- * @param  array  $airports
+ * @param array $airports
  * @return string[]
  */
-function getUniqueFirstLetters(array $airports)
+function getUniqueFirstLetters(array $airports): array
 {
-    // put your logic here
+    $result = [];
 
-    return ['A', 'B', 'C'];
+    foreach ($airports as $airport) {
+        $letter = $airport['name'][0];
+        if (!in_array($letter, $result)) {
+            array_push($result, $letter);
+        }
+    }
+    sort($result);
+    return $result;
 }
+
+function makeUrl(string $key, string $value, bool $first_page = false): string
+{
+    $url_arr = $_GET;
+    if ($first_page) {
+        $url_arr['page'] = 1;
+    }
+
+    $url_arr[$key] = $value;
+
+    return http_build_query($url_arr);
+}
+
