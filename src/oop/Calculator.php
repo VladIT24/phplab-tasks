@@ -126,7 +126,9 @@ class Calculator
      */
     public function undo()
     {
-        // TODO implement undo logic here
+        if (count($this->intents) >= 1) {
+            array_pop($this->intents);
+        }
 
         return $this;
     }
@@ -138,7 +140,10 @@ class Calculator
      */
     public function replay()
     {
-        // TODO implement replay logic here
+        if (count($this->intents) >= 1) {
+            $last_elem = end($this->intents);
+            array_push($this->intents, $last_elem);
+        }
 
         return $this;
     }
