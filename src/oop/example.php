@@ -22,6 +22,32 @@ echo $calc->init(1)
 
 echo PHP_EOL;
 
+echo $calc->init(4)
+    ->compute('*', 3)
+    ->compute('/', 2)
+    ->getResult();
+
+echo PHP_EOL;
+
+echo $calc->init(4)
+    ->compute('*', 0)
+    ->getResult();
+
+echo PHP_EOL;
+
+echo $calc->init(4)
+    ->compute('^', 2)
+    ->compute('/', 2)
+    ->getResult();
+
+echo PHP_EOL;
+
+echo $calc->init(4)
+    ->compute('^', 0)
+    ->getResult();
+
+echo PHP_EOL;
+
 // Multiply operations
 // will output 10
 echo $calc->init(15)
